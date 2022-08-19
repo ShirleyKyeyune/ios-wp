@@ -19,6 +19,18 @@ protocol CurrentWeatherViewType {
     var weatherStyle: WeatherStyle { get }
     
     func transform(input: AnyPublisher<CurrentWeatherViewModel.InputEvent, Never>) -> AnyPublisher<CurrentWeatherViewModel.OutputEvent, Never>
+    
+    func handleFetchWeather()
+    
+    func handleFetchCurrentCityName(newLocation: Location)
+    
+    func handleFetchCurrentWeather(city: WeatherRequestType)
+    
+    func handleFetchWeatherForecast(city: WeatherRequestType)
+    
+    func filterFiveDayWeatherData(dailyWeather: [DailyModelType]) -> [DailyModelType]
+    
+    func updateWeatherConditionStyles()
 }
 
 class CurrentWeatherViewModel: CurrentWeatherViewType {
@@ -27,12 +39,30 @@ class CurrentWeatherViewModel: CurrentWeatherViewType {
         case viewDidAppear
         case onCurrentLocationChanged(location: Location)
         case refreshWeatherFired
+        
+        static func == (lhs: InputEvent, rhs: InputEvent) -> Bool {
+            switch (lhs, rhs) {
+                case (.viewDidAppear, .viewDidAppear): return true
+                case (.onCurrentLocationChanged, .onCurrentLocationChanged): return true
+                case (.refreshWeatherFired, .refreshWeatherFired): return true
+                default: return false
+            }
+        }
     }
     
-    enum OutputEvent {
+    enum OutputEvent: Equatable {
         case fetchWeatherDidFail(error: Error)
         case fetchWeatherDidSucceed
         case showLoadingView(showLoading: Bool)
+        
+        static func == (lhs: OutputEvent, rhs: OutputEvent) -> Bool {
+            switch (lhs, rhs) {
+                case (.fetchWeatherDidFail, .fetchWeatherDidFail): return true
+                case (.fetchWeatherDidSucceed, .fetchWeatherDidSucceed): return true
+                case (.showLoadingView, .showLoadingView): return true
+                default: return false
+            }
+        }
     }
     
     private let weatherService: WeatherServiceType
@@ -81,7 +111,7 @@ class CurrentWeatherViewModel: CurrentWeatherViewType {
         }
     }
     
-    private func handleFetchCurrentCityName(newLocation: Location) {
+    func handleFetchCurrentCityName(newLocation: Location) {
         outputEvents.send(.showLoadingView(showLoading: true))
         
         locationService.fetchCurrentCityName(by: newLocation).sink { [weak self] completion in
@@ -96,7 +126,7 @@ class CurrentWeatherViewModel: CurrentWeatherViewType {
         }.store(in: &cancellables)
     }
     
-    private func handleFetchCurrentWeather(city: WeatherRequestType) {
+    func handleFetchCurrentWeather(city: WeatherRequestType) {
         outputEvents.send(.showLoadingView(showLoading: true))
         weatherService.fetchCurrentWeather(by: city).sink { [weak self] completion in
             if case .failure(let error) = completion {
@@ -110,7 +140,7 @@ class CurrentWeatherViewModel: CurrentWeatherViewType {
         }.store(in: &cancellables)
     }
     
-    private func handleFetchWeatherForecast(city: WeatherRequestType) {
+    func handleFetchWeatherForecast(city: WeatherRequestType) {
         outputEvents.send(.showLoadingView(showLoading: true))
         weatherService.fetchWeatherForecast(by: city)
             .sink { [weak self] completion in
