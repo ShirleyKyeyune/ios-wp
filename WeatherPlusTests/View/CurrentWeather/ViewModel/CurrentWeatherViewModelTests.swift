@@ -32,23 +32,26 @@ class CurrentWeatherViewModelTests: XCTestCase {
 
     func testFetchCurrentWeather() {
         var events = [CurrentWeatherViewModel.OutputEvent]()
-        let expectation1 = XCTestExpectation(description: "State is set to showLoadingView")
+        let expectation = self.expectation(description: "View status is updated 4 times when fetching Current Weather")
+        expectation.expectedFulfillmentCount = 4
+        
         let output = sut.transform(input: input.eraseToAnyPublisher())
         output
             .receive(on: DispatchQueue.main)
             .sink { event in
                 events.append(event)
-                
-                let containsShowLoadingViewEvent = events.contains(.showLoadingView(showLoading: true))
-                XCTAssertTrue(containsShowLoadingViewEvent)
-                expectation1.fulfill()
+                expectation.fulfill()
             }.store(in: &cancellables)
         
         goToFetchCurrentWeatherFinished()
         
         XCTAssertTrue(mockWeatherService.isFetchCurrentWeatherCalled)
-        
-        wait(for: [expectation1], timeout: 20)
+        waitForExpectations(timeout: 2, handler: nil)
+
+        XCTAssertEqual(events, [.showLoadingView(showLoading: true),
+                                .showLoadingView(showLoading: true),
+                                .fetchWeatherDidSucceed,
+                                .showLoadingView(showLoading: false)])
     }
 
 }
