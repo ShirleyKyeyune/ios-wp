@@ -59,15 +59,24 @@ struct Cells: Codable {
     let defaultBackground: String
     let defaultLoadingViewsColor: String
     let activityViewColor: String
-    let clear_sky: Colors
-    let few_clouds: Colors
-    let scattered_clouds: Colors
-    let broken_clouds: Colors
-    let shower_rain: Colors
+    let clearSky: Colors
+    let fewClouds: Colors
+    let scatteredClouds: Colors
+    let brokenClouds: Colors
+    let showerRain: Colors
     let rain: Colors
     let thunderstorm: Colors
     let snow: Colors
     let mist: Colors
+
+    enum CodingKeys: String, CodingKey {
+        case isShadowVisible, gradient, defaultBackground, defaultLoadingViewsColor, activityViewColor, rain, thunderstorm, snow, mist
+        case clearSky = "clear_sky"
+        case fewClouds = "few_clouds"
+        case scatteredClouds = "scattered_clouds"
+        case brokenClouds = "broken_clouds"
+        case showerRain = "shower_rain"
+    }
 }
 
 struct Colors: Codable {
