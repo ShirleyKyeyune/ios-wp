@@ -60,7 +60,7 @@ extension CurrentWeatherViewModelTests {
     private func goToFetchCurrentWeatherFinished() {
         mockWeatherService.currentWeatherData = StubGenerator().stubCurrentWeatherData()
         mockWeatherService.forecastData = StubGenerator().stubForecastWeatherData()
-        mockWeatherService.fetchCurrentWeatherSuccess()
+        mockWeatherService.setupFetchCurrentWeatherSuccess()
         sut.handleFetchCurrentWeather(city: StubGenerator().stubWeatherRequest())
     }
 }
@@ -84,7 +84,7 @@ class MockWeatherService: WeatherServiceType {
         return forecastResult
     }
 
-    func fetchCurrentWeatherSuccess() {
+    func setupFetchCurrentWeatherSuccess() {
         guard let currentData = currentWeatherData,
               let forecastData = forecastData else {
             return
@@ -93,7 +93,7 @@ class MockWeatherService: WeatherServiceType {
         forecastResult = Result.success(forecastData).publisher.eraseToAnyPublisher()
     }
 
-    func fetchCurrentWeatherFail(error: Error) {
+    func setupFetchCurrentWeatherFail(error: Error) {
         currentWeatherResult = Result.failure(error).publisher.eraseToAnyPublisher()
         forecastResult = Result.failure(error).publisher.eraseToAnyPublisher()
     }
